@@ -1,10 +1,6 @@
-# Maintainer: fabse
-# Contributor: txtsd <aur.archlinux@ihavea.quest>
-# Contributor: envolution
-
 pkgname=llama.cpp-cuda
 _pkgname=${pkgname%%-cuda}
-pkgver=b10798 # renovate: datasource=github-releases depName=ggml-org/llama.cpp
+pkgver=b10798
 pkgrel=1
 pkgdesc="Port of Facebook's LLaMA model in C/C++ (with NVIDIA CUDA optimizations)"
 arch=(x86_64)
@@ -40,36 +36,22 @@ conflicts=(${_pkgname} libggml ggml)
 options=(lto !debug)
 backup=("etc/conf.d/llama.cpp")
 source=(
-  "llama.cpp::git+https://github.com/Max9403/llama.cpp.git#branch=customized"
+  "llama.cpp::git+https://github.com/Max9403/llama.cpp.git#tag=${pkgver}"
   llama.cpp.conf
   llama.cpp.service
 )
 sha256sums=('SKIP'
             '53fa70cfe40cb8a3ca432590e4f76561df0f129a31b121c9b4b34af0da7c4d87'
             '0377d08a07bda056785981d3352ccd2dbc0387c4836f91fb73e6b790d836620d')
-pkgver() {
-  cd "${srcdir}/${_pkgname}"
 
-  git describe \
-    --tags \
-    --long \
-    --match 'b[0-9]*' |
-    sed -E 's/^(b[0-9]+)-([0-9]+)-g([0-9a-f]+)$/\1.r\2.g\3/'
-}
 
 build() {
   if [[ -z "${NVCC_CCBIN}" ]]; then
     source /etc/profile
   fi
-  local _upstream_tag
-  local _build_number
 
-  _upstream_tag="$(
-    git -C "${srcdir}/${_pkgname}" \
-      describe --tags --abbrev=0 --match 'b[0-9]*'
-  )"
-
-  _build_number="${_upstream_tag#b}"
+  _build_number="${pkgver#b}"
+  _build_number="${_build_number%%.*}"
 
   local _cmake_options=(
     -G Ninja
@@ -122,4 +104,3 @@ package() {
   install -Dm644 "llama.cpp.conf" "${pkgdir}/etc/conf.d/llama.cpp"
   install -Dm644 "llama.cpp.service" "${pkgdir}/usr/lib/systemd/system/llama.cpp.service"
 }
-# vim:set ts=2 sw=2 et:

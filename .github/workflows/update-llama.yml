@@ -23,44 +23,22 @@ jobs:
             https://github.com/Max9403/llama.cpp.git /tmp/llama-source
           git -C /tmp/llama-source fetch --tags origin
 
-          rev=$(git -C /tmp/llama-source rev-parse HEAD)
-          description=$(git -C /tmp/llama-source describe \
-            --tags --long --match 'b[0-9]*' HEAD)
-
-          if [[ ! "$description" =~ ^(b[0-9]+)-([0-9]+)-g([0-9a-f]+)$ ]]; then
-            echo "Unexpected git describe result: $description" >&2
-            exit 1
-          fi
-
-          version="${BASH_REMATCH[1]}.r${BASH_REMATCH[2]}.g${BASH_REMATCH[3]}"
-          export rev version
-
-          python3 - <<'PY'
-          import os
-          import re
-          from pathlib import Path
-
-          path = Path("llama.cpp-cuda/PKGBUILD")
-          text = path.read_text()
-          text, versions = re.subn(
-              r"^pkgver=.*$", f"pkgver={os.environ['version']}", text,
-              flags=re.MULTILINE,
+          version=$(
+            git -C /tmp/llama-source tag --merged HEAD --list 'b*.custom*' |
+              grep -E '^b[0-9]+\.custom[0-9]+$' |
+              sort -V |
+              tail -n 1
           )
-          text, commits = re.subn(
-              r"^_commit=.*$", f"_commit={os.environ['rev']}", text,
-              flags=re.MULTILINE,
-          )
-          if (versions, commits) != (1, 1):
-              raise SystemExit("Expected exactly one pkgver and _commit line")
-          path.write_text(text)
-          PY
+
+          test -n "$version"
+          sed -i -E "s/^pkgver=.*/pkgver=$version/" PKGBUILD
 
           docker run --rm --user "$(id -u):$(id -g)" \
-            -v "$PWD/llama.cpp-cuda:/pkg" -w /pkg \
+            -v "$PWD:/pkg" -w /pkg \
             archlinux:base-devel \
             sh -c 'makepkg --printsrcinfo > .SRCINFO'
 
-          git add llama.cpp-cuda/PKGBUILD llama.cpp-cuda/.SRCINFO
+          git add PKGBUILD .SRCINFO
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
