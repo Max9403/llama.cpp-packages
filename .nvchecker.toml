@@ -1,0 +1,4 @@
+['llama.cpp-cuda']
+source = "git"
+git = "https://github.com/Max9403/llama.cpp.git"
+include_regex = "b\\d+"
