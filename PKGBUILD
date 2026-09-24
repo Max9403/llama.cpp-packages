@@ -1,6 +1,8 @@
 pkgname=llama.cpp-cuda
 _pkgname=${pkgname%%-cuda}
-pkgver=b11149.custom0
+_basever=b10798
+_customver=c1
+pkgver=${_basever}.${_customver}
 pkgrel=1
 pkgdesc="Port of Facebook's LLaMA model in C/C++ (with NVIDIA CUDA optimizations)"
 arch=(x86_64)
@@ -36,7 +38,7 @@ conflicts=(${_pkgname} libggml ggml)
 options=(lto !debug)
 backup=("etc/conf.d/llama.cpp")
 source=(
-  "llama.cpp::git+https://github.com/Max9403/llama.cpp.git#tag=${pkgver}"
+  "llama.cpp::git+https://github.com/Max9403/llama.cpp.git#tag=${_customver}"
   llama.cpp.conf
   llama.cpp.service
 )
@@ -71,7 +73,7 @@ build() {
     -DGGML_LTO=ON
     -DGGML_RPC=ON
     -DGGML_CUDA=ON
-    -DGGML_CUDA_FA_ALL_QUANTS=ON
+    -DGGML_CUDA_FA_QUANTS=all
     -DGGML_CUDNN=ON
     -DLLAMA_BUILD_NUMBER="${_build_number}"
     -Wno-dev

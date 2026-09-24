@@ -23,25 +23,51 @@ jobs:
             https://github.com/Max9403/llama.cpp.git /tmp/llama-source
           git -C /tmp/llama-source fetch --tags origin
 
-          version=$(
-            git -C /tmp/llama-source tag --merged HEAD --list 'b*.custom*' |
-              grep -E '^b[0-9]+\.custom[0-9]+$' |
-              sort -V |
-              tail -n 1
-          )
+          custom_tag=
+          while IFS= read -r tag; do
+            if [[ "$tag" =~ ^c[1-9][0-9]*$ ]]; then
+              custom_tag=$tag
+              break
+            fi
+          done < <(git -C /tmp/llama-source tag --merged HEAD \
+            --list 'c[0-9]*' --sort=-version:refname)
 
-          test -n "$version"
-          sed -i -E "s/^pkgver=.*/pkgver=$version/" PKGBUILD
+          if [[ -z "$custom_tag" ]]; then
+            echo 'No cN release tag is reachable from customized.' >&2
+            exit 1
+          fi
+
+          release_commit=$(git -C /tmp/llama-source rev-parse "${custom_tag}^{commit}")
+          base_tag=
+          while IFS= read -r tag; do
+            if [[ "$tag" =~ ^b[0-9]+$ ]]; then
+              base_tag=$tag
+              break
+            fi
+          done < <(git -C /tmp/llama-source tag --merged "$release_commit" \
+            --list 'b[0-9]*' --sort=-version:refname)
+
+          if [[ -z "$base_tag" ]]; then
+            echo "No bN upstream tag is reachable from $custom_tag." >&2
+            exit 1
+          fi
+
+          grep -q '^_basever=' PKGBUILD
+          grep -q '^_customver=' PKGBUILD
+          grep -Fq '#tag=${_customver}' PKGBUILD
+          sed -i -E \
+            -e "s/^_basever=.*/_basever=$base_tag/" \
+            -e "s/^_customver=.*/_customver=$custom_tag/" \
+            PKGBUILD
 
           docker run --rm --user "$(id -u):$(id -g)" \
-            -v "$PWD:/pkg" -w /pkg \
-            archlinux:base-devel \
+            -v "$PWD:/pkg" -w /pkg archlinux:base-devel \
             sh -c 'makepkg --printsrcinfo > .SRCINFO'
 
           git add PKGBUILD .SRCINFO
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m "Update llama.cpp-cuda to $version"
+            git commit -m "Update llama.cpp-cuda to ${base_tag}.${custom_tag}"
             git push
           fi
