@@ -24,29 +24,20 @@ jobs:
           git -C /tmp/llama-source fetch --tags origin
 
           custom_tag=
+          base_tag=
           while IFS= read -r tag; do
-            if [[ "$tag" =~ ^c[1-9][0-9]*$ ]]; then
+            if [[ "$tag" =~ ^(c[1-9][0-9]*)\.(b[0-9]+)$ ]]; then
               custom_tag=$tag
+              base_tag=${BASH_REMATCH[2]}
               break
             fi
           done < <(git -C /tmp/llama-source tag --merged HEAD \
-            --list 'c[0-9]*' --sort=-version:refname)
+            --list 'c[0-9]*.b[0-9]*' --sort=-version:refname)
 
           if [[ -z "$custom_tag" ]]; then
-            echo 'No cN release tag is reachable from customized.' >&2
+            echo 'No cN.bNNN release tag is reachable from customized.' >&2
             exit 1
           fi
-
-          release_commit=$(git -C /tmp/llama-source rev-parse "${custom_tag}^{commit}")
-          base_tag=
-          while IFS= read -r tag; do
-            if [[ "$tag" =~ ^b[0-9]+$ ]]; then
-              base_tag=$tag
-              break
-            fi
-          done < <(git -C /tmp/llama-source tag --merged "$release_commit" \
-            --list 'b[0-9]*' --sort=-version:refname)
-
           if [[ -z "$base_tag" ]]; then
             echo "No bN upstream tag is reachable from $custom_tag." >&2
             exit 1
