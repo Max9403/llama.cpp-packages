@@ -1,7 +1,7 @@
 pkgname=llama.cpp-cuda
 _pkgname=${pkgname%%-cuda}
 _basever=b11177
-_customver=c1.b11177
+_customver=c1
 pkgver=${_basever}.${_customver}
 pkgrel=1
 pkgdesc="Port of Facebook's LLaMA model in C/C++ (with NVIDIA CUDA optimizations)"
