@@ -38,7 +38,7 @@ conflicts=(${_pkgname} libggml ggml)
 options=(lto !debug)
 backup=("etc/conf.d/llama.cpp")
 source=(
-  "llama.cpp::git+https://github.com/Max9403/llama.cpp.git#tag=${_customver}"
+  "llama.cpp::git+https://github.com/Max9403/llama.cpp.git#tag=${_customver}.${_basever}"
   llama.cpp.conf
   llama.cpp.service
 )

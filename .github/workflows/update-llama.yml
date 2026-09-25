@@ -28,7 +28,7 @@ jobs:
           basever=
 
           while IFS= read -r tag; do
-            if [[ "$tag" =~ ^(c[1-9][0-9]*)\.(b[0-9]+)$ ]]; then
+            if [[ "$tag" =~ ^(c[0-9]*)\.(b[0-9]+)$ ]]; then
               release_tag=$tag
               customver=${BASH_REMATCH[1]}
               basever=${BASH_REMATCH[2]}
