@@ -1,6 +1,6 @@
 pkgbase = llama.cpp-cuda
 	pkgdesc = Port of Facebook's LLaMA model in C/C++ (with NVIDIA CUDA optimizations)
-	pkgver = b11177.c1
+	pkgver = b11191.c1
 	pkgrel = 1
 	url = https://github.com/Max9403/llama.cpp
 	arch = x86_64
@@ -31,7 +31,7 @@ pkgbase = llama.cpp-cuda
 	options = lto
 	options = !debug
 	backup = etc/conf.d/llama.cpp
-	source = llama.cpp::git+https://github.com/Max9403/llama.cpp.git#tag=c1.b11177
+	source = llama.cpp::git+https://github.com/Max9403/llama.cpp.git#tag=c1.b11191
 	source = llama.cpp.conf
 	source = llama.cpp.service
 	sha256sums = SKIP
