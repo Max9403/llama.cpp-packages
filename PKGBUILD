@@ -1,6 +1,6 @@
 pkgname=llama.cpp-cuda
 _pkgname=${pkgname%%-cuda}
-_basever=b11347
+_basever=b11371
 _customver=c1
 pkgver=${_basever}.${_customver}
 pkgrel=1
